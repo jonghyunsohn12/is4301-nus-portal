@@ -1,4 +1,7 @@
-import { NavLink } from 'react-router-dom'
+import { signOut } from 'firebase/auth'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext.jsx'
+import { auth } from '../firebase.js'
 
 const navigationItems = [
   { label: 'Home', to: '/' },
@@ -7,6 +10,17 @@ const navigationItems = [
 ]
 
 function NavBar() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await signOut(auth)
+    navigate('/login', {
+      replace: true,
+      state: { message: 'You have been logged out.' },
+    })
+  }
+
   return (
     <header className="site-header">
       <div className="nav-container">
@@ -28,6 +42,26 @@ function NavBar() {
               {item.label}
             </NavLink>
           ))}
+
+          {user ? (
+            <div className="account-navigation">
+              <span className="user-email" title={user.email}>
+                {user.email}
+              </span>
+              <button className="logout-button" type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          ) : (
+            <NavLink
+              to="/login"
+              className={({ isActive }) =>
+                isActive ? 'nav-link active' : 'nav-link'
+              }
+            >
+              Login / Sign up
+            </NavLink>
+          )}
         </nav>
       </div>
     </header>
